@@ -263,3 +263,260 @@ Build a secure, modern warranty platform that allows customers to independently 
 - Modular architecture.
 - Cloud deployment.
 - Type-safe code.
+
+# 12. Website Structure
+
+## Public Pages
+
+| Route | Purpose |
+|--------|---------|
+| `/` | Home |
+| `/about` | About BOAT Warranty Hub |
+| `/warranty` | Warranty Lookup |
+| `/product/[serial]` | Product Details |
+| `/faq` | Frequently Asked Questions |
+| `/contact` | Contact Support |
+
+## Authentication
+
+| Route | Purpose |
+|--------|---------|
+| `/login` | Administrator Login |
+
+## Admin Pages
+
+| Route | Purpose |
+|--------|---------|
+| `/admin` | Dashboard |
+| `/admin/products` | Product Management |
+| `/admin/repairs` | Repair Management |
+| `/admin/upload` | Upload Warranty PDFs |
+
+---
+
+# 13. Technology Stack
+
+| Layer | Technology | Purpose |
+|---------|------------|---------|
+| Frontend | Next.js (App Router) | Routing, layouts, Server & Client Components |
+| Language | TypeScript | Type safety |
+| Styling | Tailwind CSS | Responsive modern UI |
+| Database | PostgreSQL | Store users, products, warranty and repair records |
+| ORM | Prisma | Type-safe queries, migrations and relations |
+| Authentication | NextAuth.js | Credentials & Google Authentication |
+| Password Security | bcrypt | Password hashing |
+| Validation | Zod | API & Form validation |
+| Backend | Route Handlers & Server Actions | CRUD APIs & business logic |
+| File Storage | Google Cloud Storage | Store warranty PDFs |
+| File Access | Signed URLs | Secure PDF downloads |
+| Deployment | Google Cloud Run | Production hosting |
+| CI/CD | GitHub Actions | Automated build pipeline |
+| Containerization | Docker | Production deployment |
+| Logging | Pino | Structured logging |
+| Version Control | Git & GitHub | Source control |
+
+---
+
+# 14. Database Overview
+
+## Entities
+
+### User
+
+- id
+- name
+- email
+- password
+- role
+
+### Product
+
+- id
+- serialNumber
+- name
+- model
+- purchaseDate
+- warrantyExpiry
+- warrantyPdfUrl
+
+### RepairHistory
+
+- id
+- productId
+- issue
+- repairDate
+- status
+- remarks
+
+## Relationships
+
+```text
+User
+ │
+ └── manages
+      │
+Product
+ │
+ └── has many
+      │
+RepairHistory
+```
+
+---
+
+# 15. API Overview
+
+| Method | Endpoint | Purpose |
+|---------|----------|---------|
+| POST | `/api/auth/login` | Admin Login |
+| GET | `/api/warranty/[serial]` | Warranty Lookup |
+| GET | `/api/products` | Get Products |
+| POST | `/api/products` | Add Product |
+| PUT | `/api/products/[id]` | Update Product |
+| DELETE | `/api/products/[id]` | Delete Product |
+| POST | `/api/repairs` | Add Repair |
+| PUT | `/api/repairs/[id]` | Update Repair |
+| DELETE | `/api/repairs/[id]` | Delete Repair |
+| POST | `/api/upload` | Upload Warranty PDF |
+
+---
+
+# 16. Application Workflow
+
+```text
+Customer
+   │
+   ▼
+Enter Serial Number
+   │
+   ▼
+Validate (Zod)
+   │
+   ▼
+Next.js Route Handler
+   │
+   ▼
+Prisma ORM
+   │
+   ▼
+PostgreSQL
+   │
+   ▼
+Warranty + Repairs
+   │
+   ▼
+Signed URL
+   │
+   ▼
+Display Result
+```
+
+---
+
+## Admin Workflow
+
+```text
+Login
+  │
+  ▼
+Dashboard
+  │
+  ├── Products
+  ├── Repairs
+  └── Upload PDF
+        │
+        ▼
+Google Cloud Storage
+        │
+        ▼
+Update PostgreSQL
+```
+
+---
+
+# 17. Security
+
+- NextAuth.js Authentication
+- Google OAuth
+- JWT Session Management
+- Middleware Route Protection
+- Role-Based Access Control (RBAC)
+- bcrypt Password Hashing
+- Zod Request Validation
+- Environment Variables
+- Google Cloud Signed URLs
+- Private Cloud Storage
+
+---
+
+# 18. Risk Analysis
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Invalid Serial Numbers | Incorrect lookup | Zod validation & unique constraints |
+| Unauthorized Access | Security issue | NextAuth + RBAC + Middleware |
+| Large PDF Uploads | Slow uploads | File size & type validation |
+| Cloud Storage Failure | Missing PDFs | Retry uploads & metadata backup |
+| Database Failure | Service interruption | PostgreSQL backups |
+| Merge Conflicts | Development delay | GitHub PR workflow |
+
+---
+
+# 19. Sprint Timeline
+
+| Week | Deliverables |
+|------|--------------|
+| Week 1 | Setup, Authentication, Database, Home Page |
+| Week 2 | Warranty Lookup, Product Module, Admin Dashboard |
+| Week 3 | Repair Module, PDF Upload, RBAC, Validation |
+| Week 4 | Testing, Docker, GitHub Actions, Cloud Deployment, Documentation |
+
+---
+
+# 20. Future Scope
+
+- Customer Registration
+- QR Code Warranty Lookup
+- Email Notifications
+- Mobile Application
+- Analytics Dashboard
+- Multi-language Support
+
+---
+
+# 21. Mapping to Sprint Concepts
+
+| Area | Concepts Covered |
+|------|------------------|
+| Routing | App Router, Layouts, Route Groups, Dynamic Routes |
+| Rendering | Server Components, Client Components, Loading UI |
+| APIs | Route Handlers, Server Actions, Validation |
+| Database | PostgreSQL, Prisma, Relations, Migrations |
+| Authentication | NextAuth.js, JWT, Middleware, RBAC |
+| Storage | Google Cloud Storage, Signed URLs |
+| Deployment | Docker, Cloud Run, GitHub Actions |
+| Logging | Pino |
+| Security | bcrypt, Zod, Environment Variables |
+
+---
+
+# 22. Validation Checklist
+
+- ✅ Business problem clearly defined
+- ✅ Stakeholders identified
+- ✅ KPIs measurable
+- ✅ User stories follow Role → Action → Benefit
+- ✅ MVP scope defined
+- ✅ Features documented
+- ✅ Functional & Non-functional requirements included
+- ✅ Technology stack finalized
+- ✅ Database & APIs documented
+- ✅ Risks identified
+- ✅ Security planned
+- ✅ Sprint timeline prepared
+
+---
+
+# 23. Conclusion
+
+BOAT Warranty Hub provides a centralized warranty verification platform that simplifies warranty lookup, repair tracking, and warranty document management. Built using **Next.js**, **PostgreSQL**, **Prisma**, **Google Cloud Platform**, and **GitHub Actions**, the MVP delivers a secure, responsive, and maintainable solution while implementing the required Sprint concepts.
