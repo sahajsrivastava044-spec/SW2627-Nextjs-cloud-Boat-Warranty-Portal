@@ -1,0 +1,34 @@
+{
+  "warranties": [
+    {
+      "serial": "BW123456789001",
+      "product": "boAt Airdopes 141",
+      "warrantyStatus": "Active",
+      "expiresOn": "2027-06-15"
+    },
+    {
+      "serial": "BW123456789002",
+      "product": "boAt Airdopes 141",
+      "warrantyStatus": "Active",
+      "expiresOn": "2027-06-15"
+    },
+    {
+      "serial": "BW123456789003",
+      "product": "boAt Airdopes 141",
+      "warrantyStatus": "Active",
+      "expiresOn": "2027-06-15"
+    },
+    {
+      "serial": "BW123456789004",
+      "product": "boAt Airdopes 141",
+      "warrantyStatus": "Active",
+      "expiresOn": "2027-06-15"
+    },
+    {
+      "serial": "BW123456789005",
+      "product": "boAt Airdopes 141",
+      "warrantyStatus": "Active",
+      "expiresOn": "2027-06-15"
+    }
+  ]
+}
