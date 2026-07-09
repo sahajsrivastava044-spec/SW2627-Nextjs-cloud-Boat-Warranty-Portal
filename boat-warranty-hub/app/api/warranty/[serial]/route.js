@@ -1,16 +1,17 @@
-import data from "../../../../db.json"
+import { NextResponse } from "next/server";
+import { verifyWarranty } from "../../../../services/warranty.service";
 
-export async function GET(request, { params }) {
-    const {serial}=await params;
-    const warranty=await data.warranties.find(w=>w.serial===serial);
-    if (!warranty){
-        return Response.json({
-            success:false,
-            message:"Warranty not found"
-        },{status:404});
+export async function GET(request,{params}){
+
+    const {serial} = await params
+
+    const result = await verifyWarranty(serial);
+
+    if(!result){
+        return NextResponse.json({
+            message:"Product not found"
+        },{status:404})
     }
-    return Response.json({
-        success: true,
-        ...warranty
-    });
+
+    return NextResponse.json(result);
 }
