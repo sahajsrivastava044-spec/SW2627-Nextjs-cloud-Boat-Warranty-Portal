@@ -1,27 +1,16 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function UserNavbar() {
-  const [user, setUser] = useState(null);
+  const { data: session } = useSession();
+  const user = session?.user || null;
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from localStorage', e);
-      }
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
+  const handleLogout = async () => {
     setShowDropdown(false);
-    window.location.href = '/login';
+    await signOut({ callbackUrl: '/login' });
   };
 
   return (

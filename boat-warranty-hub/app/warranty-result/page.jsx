@@ -1,68 +1,161 @@
 'use client';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import UserNavbar from '@/components/layout/UserNavbar';
 import Footer from '@/components/layout/Footer';
 
-// Mock warranty data keyed by serial number
-const warrantyDB = {
-  'BW123456789001': {
-    productName: 'boAt Airdopes 141',
-    model: 'Airdopes 141',
+// Default templates for smart merging
+const categoryTemplates = {
+  earbuds: {
     category: 'Earbuds',
-    color: 'Active Black',
-    purchaseDate: '15 Jan 2024',
-    warrantyStart: '15 Jan 2024',
-    warrantyExpiry: '14 Jan 2025',
-    daysLeft: 215,
-    status: 'Active',
-    warrantyType: 'Manufacturing Warranty',
-    placeOfPurchase: 'Online',
-    invoiceRequired: 'No',
     image: '/boat_earbuds.png',
+    coverageHighlights: [
+      'Manufacturing defects covered for 12 months',
+      'Battery replacement covered for 6 months',
+      'Free service support at authorized centers',
+    ]
   },
+  headphones: {
+    category: 'Headphones',
+    image: '/boat_headphones.png',
+    coverageHighlights: [
+      'Manufacturing defects covered for 12 months',
+      'Original boAt spare parts used for repairs',
+      'Free service support at authorized centers',
+    ]
+  },
+  default: {
+    category: 'Accessories',
+    image: '/boat_headphones.png', // fallback
+    coverageHighlights: [
+      'Manufacturing defects covered for 12 months',
+      'Original boAt spare parts used for repairs',
+      'Free service support at authorized centers',
+    ]
+  }
 };
 
-// Default product for any other serial number
-const defaultProduct = {
-  productName: 'boAt Rockerz 550',
-  model: 'Rockerz 550',
-  category: 'Headphones',
-  color: 'Active Black',
-  purchaseDate: '15 Jan 2024',
-  warrantyStart: '15 Jan 2024',
-  warrantyExpiry: '14 Jan 2025',
-  daysLeft: 215,
-  status: 'Active',
-  warrantyType: 'Manufacturing Warranty',
-  placeOfPurchase: 'Online',
-  invoiceRequired: 'No',
-  image: '/boat_headphones.png',
-  coverageHighlights: [
-    'Manufacturing defects covered for 12 months',
-    'Original boAt spare parts used for repairs',
-    'Free service support at authorized centers',
-  ],
-  claimSteps: [
-    'Keep your purchase invoice and serial number ready.',
-    'Visit the nearest authorized service center or contact support.',
-    'Get your product inspected and repair process initiated.',
-  ],
-  faqs: [
-    { q: 'How long does warranty verification take?', a: 'Instantly. Your product details are verified as soon as you submit the serial number.' },
-    { q: 'Can I claim warranty without an invoice?', a: 'Invoice is preferred, but certain claims may still be supported with product proof and serial verification.' },
-    { q: 'What is not covered under warranty?', a: 'Physical damage, water damage, and wear-and-tear are not covered under manufacturing warranty.' },
-  ],
-};
+const defaultClaimSteps = [
+  'Keep your purchase invoice and serial number ready.',
+  'Visit the nearest authorized service center or contact support.',
+  'Get your product inspected and repair process initiated.',
+];
+
+const defaultFaqs = [
+  { q: 'How long does warranty verification take?', a: 'Instantly. Your product details are verified as soon as you submit the serial number.' },
+  { q: 'Can I claim warranty without an invoice?', a: 'Invoice is preferred, but certain claims may still be supported with product proof and serial verification.' },
+  { q: 'What is not covered under warranty?', a: 'Physical damage, water damage, and wear-and-tear are not covered under manufacturing warranty.' },
+];
 
 function WarrantyResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const serial = searchParams.get('serial') || '';
 
-  const product = warrantyDB[serial] || { ...defaultProduct };
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function fetchWarranty() {
+      if (!serial) {
+        setError('No serial number provided.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/warranty/${serial}`);
+        if (!res.ok) {
+          throw new Error('Product not found or invalid serial number.');
+        }
+        const data = await res.json();
+        
+        // --- SMART MERGE LOGIC ---
+        const nameLower = (data.productName || '').toLowerCase();
+        let template = categoryTemplates.default;
+        if (nameLower.includes('airdopes') || nameLower.includes('earbuds')) {
+          template = categoryTemplates.earbuds;
+        } else if (nameLower.includes('rockerz') || nameLower.includes('headphones')) {
+          template = categoryTemplates.headphones;
+        }
+
+        // Calculate days left
+        let daysLeft = 0;
+        if (data.warrantyExpiry) {
+          const expiry = new Date(data.warrantyExpiry);
+          const today = new Date();
+          const diffTime = expiry - today;
+          daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (daysLeft < 0) daysLeft = 0;
+        }
+
+        // Format dates cleanly
+        const formatDate = (dateString) => {
+          if (!dateString) return 'N/A';
+          const d = new Date(dateString);
+          return isNaN(d) ? dateString : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        };
+
+        const mergedProduct = {
+          id: data.id,
+          productName: data.productName,
+          model: data.productName,
+          color: 'Standard',
+          warrantyType: 'Manufacturing Warranty',
+          placeOfPurchase: 'Retail / Online',
+          invoiceRequired: 'Preferred',
+          purchaseDate: formatDate(data.purchaseDate),
+          warrantyStart: formatDate(data.purchaseDate),
+          warrantyExpiry: formatDate(data.warrantyExpiry),
+          status: data.warrantyStatus === 'ACTIVE' ? 'Active' : 'Expired',
+          daysLeft,
+          ...template,
+          claimSteps: defaultClaimSteps,
+          faqs: defaultFaqs,
+        };
+
+        setProduct(mergedProduct);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchWarranty();
+  }, [serial]);
+
+  if (loading) {
+    return (
+      <main style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ color: '#888', fontSize: '1.2rem' }}>Verifying warranty details...</div>
+      </main>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <main style={{ background: '#f5f5f5', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
+        <UserNavbar />
+        <div style={{ maxWidth: '600px', margin: '100px auto', background: '#fff', padding: '40px', borderRadius: '14px', textAlign: 'center', border: '1px solid #e8e8e8' }}>
+          <h1 style={{ fontSize: '1.8rem', color: '#111', marginBottom: '16px' }}>Warranty Not Found</h1>
+          <p style={{ color: '#666', marginBottom: '24px' }}>We couldn't find a warranty record for the serial number: <strong>{serial}</strong></p>
+          <button
+            onClick={() => router.push('/home')}
+            style={{
+              background: '#e8001d', color: '#fff', border: 'none', padding: '12px 24px',
+              borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer'
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   const isActive = product.status === 'Active';
 
@@ -348,6 +441,14 @@ function WarrantyResultContent() {
                   btnLabel: 'Download PDF',
                   btnIcon: '↓',
                   primary: true,
+                  onClick: () => {
+                    if (product.id) {
+                      alert('Downloading your warranty certificate...');
+                      window.open(`/api/products/${product.id}/warranty-pdf`, '_blank');
+                    } else {
+                      alert('Warranty ID is missing, cannot download PDF.');
+                    }
+                  }
                 },
                 {
                   icon: (

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { loginApi } from '../../../services/frontendAuth.service';
+import { signIn, getSession, signOut } from 'next-auth/react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -15,11 +15,22 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userData = await loginApi(email, password);
-      if (userData.role === 'ADMIN') {
-        localStorage.setItem('admin', JSON.stringify(userData));
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        alert(result.error);
+        return;
+      }
+
+      const session = await getSession();
+      if (session?.user?.role === 'ADMIN') {
         router.push('/admin');
       } else {
+        await signOut({ redirect: false });
         alert('Unauthorized: You do not have Admin privileges.');
       }
     } catch (error) {

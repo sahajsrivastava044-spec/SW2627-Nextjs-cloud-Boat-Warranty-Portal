@@ -33,24 +33,23 @@ app/
 │   │   └── [...nextauth]/
 │   │       └── route.js
 │   │
-│   ├── warranty/
+│   ├── warranty/  (done)
 │   │   └── [serial]/
 │   │       └── route.js
 │   │
-│   ├── products/
+│   ├── products/  (done)
+│   │   ├── route.js
+│   │   └── [id]/
+│   │       └── route.js
+|   |       └──warranty-pdf
+│   │               └──route.js
+│   ├── repairs/   (done)
 │   │   ├── route.js
 │   │   └── [id]/
 │   │       └── route.js
 │   │
-│   ├── repairs/
-│   │   ├── route.js
-│   │   └── [id]/
-│   │       └── route.js
 │   │
-│   ├── upload/
-│   │   └── route.js
-│   │
-│   └── dashboard/
+│   └── dashboard/ (done)
 │       └── stats/
 │           └── route.js
 │
@@ -74,7 +73,7 @@ app/
 │   ├── constants.js
 │   └── utils.js
 │
-├── services/
+├── services/ ()
 │   │
 │   ├── warranty.service.js
 │   ├── product.service.js
