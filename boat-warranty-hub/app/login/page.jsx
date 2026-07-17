@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { loginApi } from '../../services/frontendAuth.service';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,30 +15,17 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let userData;
-      try {
-        userData = await loginApi(email, password);
-      } catch (apiError) {
-        console.warn('Backend API failed, falling back to frontend mock authentication:', apiError);
-        if (email === 'admin@boat.com' && password === 'admin123') {
-          userData = {
-            id: 1,
-            name: "BOAT Admin",
-            email: "admin@boat.com",
-            role: "ADMIN"
-          };
-        } else if (email && password) {
-          userData = {
-            id: 2,
-            name: email.split('@')[0] || "User",
-            email: email,
-            role: "USER"
-          };
-        } else {
-          throw new Error("Please fill in email and password");
-        }
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        alert(result.error);
+        return;
       }
-      localStorage.setItem('user', JSON.stringify(userData));
+
       router.push('/home');
     } catch (error) {
       console.error('Login error:', error);

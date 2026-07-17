@@ -25,7 +25,6 @@ export async function getProductById(id){
     return product;
 }
 
-
 export async function updateExistingProduct(id,data){
     const product = await findProductById(id);
 

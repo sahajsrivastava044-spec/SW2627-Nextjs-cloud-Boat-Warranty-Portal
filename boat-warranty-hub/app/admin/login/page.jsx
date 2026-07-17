@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { loginApi } from '../../../services/frontendAuth.service';
+import { signIn, getSession, signOut } from 'next-auth/react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -15,36 +15,22 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let userData;
-      try {
-        userData = await loginApi(email, password);
-      } catch (apiError) {
-        console.warn('Backend API failed, falling back to frontend mock authentication:', apiError);
-        // Temporary data for testing admin login routing without a backend database
-        if (email === 'admin@boat.com' && password === 'admin123') {
-          userData = {
-            id: 1,
-            name: "Admin",
-            email: "admin@boat.com",
-            role: "ADMIN"
-          };
-        } else if (email && password) {
-          // Allow any login in mock mode for testing convenience
-          userData = {
-            id: 1,
-            name: "Admin",
-            email: email,
-            role: "ADMIN"
-          };
-        } else {
-          throw new Error("Please fill in email and password");
-        }
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        alert(result.error);
+        return;
       }
 
-      if (userData.role === 'ADMIN') {
-        localStorage.setItem('admin', JSON.stringify(userData));
+      const session = await getSession();
+      if (session?.user?.role === 'ADMIN') {
         router.push('/admin');
       } else {
+        await signOut({ redirect: false });
         alert('Unauthorized: You do not have Admin privileges.');
       }
     } catch (error) {

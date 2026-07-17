@@ -9,8 +9,8 @@ export default function CTA({ badgeType }) {
   const router = useRouter();
 
   const handleVerify = () => {
-    if (serial.length < 9 || serial.length > 20) {
-      setError('Please enter a valid serial number (9–20 characters).');
+    if (!serial.trim()) {
+      setError('Please enter a serial number.');
     } else {
       setError('');
       router.push(`/warranty-result?serial=${encodeURIComponent(serial)}`);
@@ -98,8 +98,7 @@ export default function CTA({ badgeType }) {
                 type="text"
                 value={serial}
                 onChange={e => { setSerial(e.target.value); setError(''); }}
-                placeholder="Enter 9 to 20 character serial number"
-                maxLength={20}
+                placeholder="Enter serial number"
                 style={{
                   border: 'none',
                   outline: 'none',

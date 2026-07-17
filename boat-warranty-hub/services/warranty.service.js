@@ -21,10 +21,11 @@ export async function verifyWarranty(serialNumber){
     }
 
     return{
+        id: product.id,
         serialNumber: product.serialNumber,
         productName: product.productName,
         purchaseDate: product.purchaseDate,
         warrantyExpiry:product.warrantyExpiry,
         warrantyStatus
-    };
+    };  
 }    
