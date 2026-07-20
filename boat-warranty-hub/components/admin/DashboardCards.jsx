@@ -14,7 +14,7 @@ export default function AdminCTA() {
       setError('Please enter a valid serial number (9-20 characters).');
     } else {
       setError('');
-      router.push('/warranty-result?serial=' + encodeURIComponent(serial));
+      router.push('/admin/warranty-lookup?serial=' + encodeURIComponent(serial));
     }
   };
 
