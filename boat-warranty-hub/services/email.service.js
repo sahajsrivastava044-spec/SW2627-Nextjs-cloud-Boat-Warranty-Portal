@@ -29,25 +29,6 @@ export const sendEmail = async ({ to, subject, html }) => {
     }
 };
 
-export const sendOtpEmail = async (to, otpCode) => {
-    const subject = 'Your boAt Warranty Hub OTP';
-    const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
-            <h2 style="color: #e8001d; text-align: center;">boAt Warranty Hub</h2>
-            <p>Hello,</p>
-            <p>Thank you for registering. Please use the following One-Time Password (OTP) to verify your email address:</p>
-            <div style="text-align: center; margin: 30px 0;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333; padding: 10px 20px; background-color: #f4f4f4; border-radius: 5px;">${otpCode}</span>
-            </div>
-            <p>This OTP is valid for 10 minutes.</p>
-            <p>If you did not request this, please ignore this email.</p>
-            <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #888; text-align: center;">&copy; ${new Date().getFullYear()} boAt. All rights reserved.</p>
-        </div>
-    `;
-    return sendEmail({ to, subject, html });
-};
-
 export const sendPasswordResetEmail = async (to, resetLink) => {
     const subject = 'Reset Your boAt Warranty Hub Password';
     const html = `

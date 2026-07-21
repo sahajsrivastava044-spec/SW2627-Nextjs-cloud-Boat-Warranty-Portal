@@ -14,7 +14,7 @@ export async function middleware(request){
         method: request.method,
         path: pathname,
     }, "Incoming Request");
-    const isPublicRoute=pathname.startsWith("/api/auth") || PUBLIC_ROUTES.includes(pathname);
+    const isPublicRoute = pathname.startsWith("/api/auth") || pathname.startsWith("/api/warranty") || PUBLIC_ROUTES.includes(pathname);
 
     if(isPublicRoute){
         return NextResponse.next();

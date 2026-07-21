@@ -41,14 +41,6 @@ model User {
   resetTokenExpiry DateTime?
 }
 
-model Otp {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  code      String   @db.VarChar(10)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
-
 enum Role {
   USER
   ADMIN

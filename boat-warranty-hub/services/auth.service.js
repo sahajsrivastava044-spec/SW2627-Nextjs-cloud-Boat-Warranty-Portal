@@ -1,10 +1,8 @@
-import { createUser, findUserByEmail } from "../repositories/user.repository";
+import { createUser, findUserByEmail, findUserByEmailOrPhone } from "../repositories/user.repository";
 import bcrypt from "bcryptjs";
 
-import {prisma} from "@/lib/prisma";
-
 export async function registration(data){
-    const { otp, ...userData } = data;
+    const { confirmPassword, ...userData } = data;
 
     const existingUser = await findUserByEmail(userData.email);
 
@@ -12,31 +10,11 @@ export async function registration(data){
         throw new Error("User already exists");
     }
 
-    // Verify OTP
-    const otpRecord = await prisma.otp.findUnique({
-        where: { email: userData.email }
-    });
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    if (!otpRecord) {
-        throw new Error("OTP not found or expired. Please request a new one.");
-    }
+    const user = await createUser({ ...userData, password: hashedPassword, role: 'USER', isVerified: true });
 
-    if (otpRecord.code !== otp) {
-        throw new Error("Invalid OTP");
-    }
-
-    if (otpRecord.expiresAt < new Date()) {
-        throw new Error("OTP has expired");
-    }
-
-    const hashedPassword = await bcrypt.hash(userData.password,10);
-
-    const user = await createUser({...userData, password:hashedPassword, role:'USER', isVerified: true});
-
-    // Delete OTP after successful registration
-    await prisma.otp.delete({ where: { email: userData.email } });
-
-    const {password, ...safeUser} = user;
+    const { password, ...safeUser } = user;
 
     return safeUser;
 }
@@ -44,11 +22,9 @@ export async function registration(data){
 
 export async function loginUser({email,password}){
 
-    // console.log(email)
-    // console.log(password)
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmailOrPhone(email);
     if(!user){
-        throw new Error("Invalid email or password")
+        throw new Error("Invalid email or password");
     }
 
     const isPassword = await bcrypt.compare(password,user.password);

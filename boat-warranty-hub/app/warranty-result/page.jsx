@@ -58,6 +58,49 @@ function WarrantyResultContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [showRepairModal, setShowRepairModal] = useState(false);
+  const [issueText, setIssueText] = useState('');
+  const [submittingRepair, setSubmittingRepair] = useState(false);
+  const [repairMsg, setRepairMsg] = useState({ type: '', text: '' });
+  const [repairCreatedData, setRepairCreatedData] = useState(null);
+
+  const handleOpenRepairModal = () => {
+    setIssueText('');
+    setRepairMsg({ type: '', text: '' });
+    setRepairCreatedData(null);
+    setShowRepairModal(true);
+  };
+
+  const handleRepairSubmit = async (e) => {
+    e.preventDefault();
+    if (!issueText || issueText.trim().length === 0) {
+      setRepairMsg({ type: 'error', text: "Please write your issue / complaint before submitting." });
+      return;
+    }
+
+    setSubmittingRepair(true);
+    setRepairMsg({ type: '', text: '' });
+
+    try {
+      const res = await fetch(`/api/warranty/${encodeURIComponent(serial)}/repairs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ issue: issueText }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to submit repair request');
+      }
+
+      setRepairCreatedData(data.data);
+    } catch (err) {
+      setRepairMsg({ type: 'error', text: err.message });
+    } finally {
+      setSubmittingRepair(false);
+    }
+  };
+
   useEffect(() => {
     async function fetchWarranty() {
       if (!serial) {
@@ -466,15 +509,15 @@ function WarrantyResultContent() {
                 {
                   icon: (
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8001d" strokeWidth="2">
-                      <path d="M3 18v-6a9 9 0 0118 0v6" />
-                      <path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z" />
+                      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
                     </svg>
                   ),
-                  title: 'Need Help?',
-                  desc: 'Contact our support team for any warranty related queries.',
-                  btnLabel: 'Contact Support',
+                  title: 'Repair Request',
+                  desc: 'Submit a repair request for your product.',
+                  btnLabel: 'Request Repair',
                   btnIcon: '→',
                   primary: false,
+                  onClick: handleOpenRepairModal,
                 },
               ].map((action, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -623,6 +666,188 @@ function WarrantyResultContent() {
             </div>
           </div>
         ))}
+      {/* Repair Request Modal */}
+      {showRepairModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '16px', maxWidth: '520px', width: '100%',
+            padding: '32px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
+            position: 'relative'
+          }}>
+            {/* Close 'X' Button */}
+            <button
+              onClick={() => setShowRepairModal(false)}
+              style={{
+                position: 'absolute', top: '20px', right: '20px',
+                background: '#f3f4f6', border: 'none', borderRadius: '50%',
+                width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: '#6b7280', fontSize: '1.2rem', fontWeight: 'bold'
+              }}
+            >
+              ×
+            </button>
+
+            {!isActive ? (
+              /* Warranty Expired Message */
+              <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%', background: '#fef2f2',
+                  color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 20px auto', border: '1px solid #fecaca'
+                }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#111827', margin: '0 0 12px 0' }}>
+                  Warranty Expired
+                </h3>
+                <p style={{ fontSize: '0.95rem', color: '#4b5563', lineHeight: 1.6, margin: '0 0 24px 0' }}>
+                  Sorry, repair requests can only be submitted for products with an <strong>active warranty</strong>.
+                  Your warranty expired on <strong>{product.warrantyExpiry}</strong>.
+                </p>
+                <button
+                  onClick={() => setShowRepairModal(false)}
+                  style={{
+                    width: '100%', padding: '12px 20px', borderRadius: '8px',
+                    background: '#111827', color: '#fff', border: 'none',
+                    fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            ) : repairCreatedData ? (
+              /* Success State */
+              <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                <div style={{
+                  width: '64px', height: '64px', borderRadius: '50%', background: '#ecfdf5',
+                  color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 20px auto', border: '1px solid #a7f3d0'
+                }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#111827', margin: '0 0 8px 0' }}>
+                  Repair Request Submitted!
+                </h3>
+                <p style={{ fontSize: '0.9rem', color: '#4b5563', margin: '0 0 20px 0' }}>
+                  Your repair request has been logged successfully.<br />
+                  <strong>Ticket ID: #{repairCreatedData.id}</strong>
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => router.push(`/repair?serial=${encodeURIComponent(serial)}`)}
+                    style={{
+                      flex: 1, padding: '12px 16px', borderRadius: '8px',
+                      background: '#e8001d', color: '#fff', border: 'none',
+                      fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer'
+                    }}
+                  >
+                    View Repair History →
+                  </button>
+                  <button
+                    onClick={() => setShowRepairModal(false)}
+                    style={{
+                      padding: '12px 16px', borderRadius: '8px',
+                      background: '#f3f4f6', color: '#374151', border: 'none',
+                      fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Active Warranty Form State */
+              <form onSubmit={handleRepairSubmit}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px', background: '#fef2f2',
+                    color: '#e8001d', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', margin: 0 }}>
+                      Request Repair
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: '2px 0 0 0' }}>
+                      {product.productName} • Serial: {serial}
+                    </p>
+                  </div>
+                </div>
+
+                {repairMsg.text && (
+                  <div style={{
+                    padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.85rem',
+                    background: repairMsg.type === 'error' ? '#fef2f2' : '#f0fdf4',
+                    color: repairMsg.type === 'error' ? '#dc2626' : '#16a34a',
+                    border: `1px solid ${repairMsg.type === 'error' ? '#fecaca' : '#bbf7d0'}`
+                  }}>
+                    {repairMsg.text}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label htmlFor="issue-textarea" style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: '#111827', marginBottom: '8px' }}>
+                    What's the issue?
+                  </label>
+                  <textarea
+                    id="issue-textarea"
+                    rows={4}
+                    value={issueText}
+                    onChange={(e) => setIssueText(e.target.value)}
+                    placeholder="Write your complaint or issue here..."
+                    style={{
+                      width: '100%', padding: '12px 14px', borderRadius: '8px',
+                      border: '1.5px solid #d1d5db', fontSize: '0.92rem', color: '#111827',
+                      outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+                      boxSizing: 'border-box'
+                    }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowRepairModal(false)}
+                    disabled={submittingRepair}
+                    style={{
+                      padding: '10px 20px', borderRadius: '8px',
+                      background: 'transparent', color: '#4b5563', border: '1.5px solid #d1d5db',
+                      fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingRepair}
+                    style={{
+                      padding: '10px 24px', borderRadius: '8px',
+                      background: '#e8001d', color: '#fff', border: 'none',
+                      fontSize: '0.88rem', fontWeight: 700, cursor: submittingRepair ? 'not-allowed' : 'pointer',
+                      opacity: submittingRepair ? 0.7 : 1, transition: 'all 0.2s'
+                    }}
+                  >
+                    {submittingRepair ? 'Submitting...' : 'Submit'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
       </footer>
     </main>
   );

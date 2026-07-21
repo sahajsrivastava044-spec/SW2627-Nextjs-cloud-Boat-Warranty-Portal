@@ -8,6 +8,18 @@ export async function findUserByEmail(email){
     })
 }
 
+export async function findUserByEmailOrPhone(identifier){
+    if (!identifier) return null;
+    return await prisma.user.findFirst({
+        where:{
+            OR: [
+                { email: identifier },
+                { phone: identifier }
+            ]
+        }
+    })
+}
+
 
 export async function findUserById(id){
     return await prisma.user.findUnique({

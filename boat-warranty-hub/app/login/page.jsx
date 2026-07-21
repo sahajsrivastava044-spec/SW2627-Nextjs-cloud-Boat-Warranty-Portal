@@ -11,9 +11,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
+    setIsLoading(true);
     try {
       const result = await signIn('credentials', {
         email,
@@ -22,14 +26,16 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        alert(result.error);
+        setErrorMessage('Invalid email/phone or password. Please try again.');
+        setIsLoading(false);
         return;
       }
 
       router.push('/home');
     } catch (error) {
       console.error('Login error:', error);
-      alert(error.message || 'Login failed');
+      setErrorMessage(error.message || 'Login failed. Please try again.');
+      setIsLoading(false);
     }
   };
 
@@ -443,6 +449,28 @@ export default function LoginPage() {
                 Welcome back! Please login to continue.
               </p>
             </div>
+
+            {errorMessage && (
+              <div style={{
+                background: 'rgba(232, 0, 29, 0.08)',
+                border: '1.5px solid rgba(232, 0, 29, 0.4)',
+                borderRadius: '12px',
+                padding: '14px 18px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8001d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span style={{ color: '#e8001d', fontSize: '0.88rem', fontWeight: 600 }}>
+                  {errorMessage}
+                </span>
+              </div>
+            )}
 
             <form style={{ display: 'grid', gap: '16px' }} onSubmit={handleSubmit}>
 

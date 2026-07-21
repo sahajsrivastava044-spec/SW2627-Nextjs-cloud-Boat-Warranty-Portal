@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,50 +10,15 @@ export default function SignUpPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [isOtpSent, setIsOtpSent] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
     password: '',
     confirmPassword: '',
-    otp: '',
   });
   const [errors, setErrors] = useState({});
   const [showBanner, setShowBanner] = useState(false);
-
-  useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else {
-      setIsOtpSent(false);
-    }
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!formData.email) {
-      alert("Please enter your email first to receive OTP.");
-      return;
-    }
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      setIsOtpSent(true);
-      setCountdown(30);
-      alert("OTP sent to your email!");
-    } catch (err) {
-      alert(err.message || "Failed to send OTP");
-    }
-  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -72,7 +37,6 @@ export default function SignUpPage() {
       phone: 'Phone Number',
       password: 'Password',
       confirmPassword: 'Confirm Password',
-      otp: 'OTP',
     };
     Object.keys(labels).forEach(key => {
       if (!formData[key] || !formData[key].trim()) {
@@ -92,7 +56,6 @@ export default function SignUpPage() {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-        otp: formData.otp
       });
       // All fields filled & registered — redirect to login
       router.push('/login');
@@ -580,18 +543,6 @@ export default function SignUpPage() {
                     </svg>
                   )
                 },
-                {
-                  name: 'otp',
-                  placeholder: 'Enter OTP',
-                  type: 'text',
-                  isOtp: true,
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      <path d="M9 11l2 2 4-4" />
-                    </svg>
-                  )
-                },
               ].map((field, idx) => (
                 <div key={idx} style={{ position: 'relative' }}>
                   {/* Field Icon */}
@@ -667,45 +618,7 @@ export default function SignUpPage() {
                     </span>
                   )}
 
-                  {/* OTP Button / Countdown */}
-                  {field.isOtp && (
-                    countdown > 0 ? (
-                      <span style={{
-                        position: 'absolute',
-                        right: '18px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: '#888888',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        pointerEvents: 'none'
-                      }}>
-                        Resend in {countdown}s
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendOtp}
-                        style={{
-                          position: 'absolute',
-                          right: '18px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'transparent',
-                          color: '#e8001d',
-                          fontWeight: 600,
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          padding: '4px',
-                          border: 'none',
-                          outline: 'none',
-                          transition: 'opacity 0.2s'
-                        }}
-                      >
-                        Send OTP
-                      </button>
-                    )
-                  )}
+
                 </div>
               ))}
 
