@@ -8,17 +8,18 @@ export default function LandingNavbar() {
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        zIndex: 200,
-        height: '68px',
+        width: '100%',
+        height: '76px',
+        background: 'rgba(13, 13, 13, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 48px',
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        padding: '0 32px',
+        boxSizing: 'border-box',
+        zIndex: 100,
       }}
     >
       {/* Logo */}
@@ -39,7 +40,7 @@ export default function LandingNavbar() {
             fontStyle: 'italic',
             letterSpacing: '-1.5px',
             lineHeight: 1,
-            color: '#0d0d0d',
+            color: '#ffffff',
           }}
         >
           bo<span style={{ color: '#E31E24' }}>A</span>t
@@ -70,25 +71,27 @@ export default function LandingNavbar() {
             gap: '7px',
             padding: '8px 22px',
             height: '38px',
-            background: '#ffffff',
-            border: '1.5px solid #1a1a1a',
+            background: 'transparent',
+            border: '1.5px solid #333',
             borderRadius: '9px',
-            color: '#1a1a1a',
+            color: '#ffffff',
             fontSize: '0.8rem',
             fontWeight: 600,
             fontFamily: "'Inter', sans-serif",
             textDecoration: 'none',
             letterSpacing: '0.1px',
-            transition: 'background 0.15s, color 0.15s',
+            transition: 'background 0.15s, color 0.15s, border-color 0.15s',
             whiteSpace: 'nowrap',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = '#1a1a1a';
-            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.background = '#ffffff';
+            e.currentTarget.style.color = '#0d0d0d';
+            e.currentTarget.style.borderColor = '#ffffff';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = '#ffffff';
-            e.currentTarget.style.color = '#1a1a1a';
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.borderColor = '#333';
           }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
