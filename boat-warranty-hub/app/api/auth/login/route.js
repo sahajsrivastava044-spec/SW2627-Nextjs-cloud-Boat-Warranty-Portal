@@ -4,8 +4,9 @@ import { loginSchema } from "../../../../lib/validations";
 import logger from "@/lib/logger";
 
 export async function POST(request){
+    let body = {};
     try {
-        const body = await request.json();
+        body = await request.json();
 
         const validation = loginSchema.safeParse(body);
 
